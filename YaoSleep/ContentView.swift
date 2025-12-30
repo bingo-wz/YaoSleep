@@ -39,7 +39,7 @@ struct ContentView: View {
             .ignoresSafeArea()
             
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: 20) {
                     // 标题区域
                     headerSection
                     
@@ -52,10 +52,10 @@ struct ContentView: View {
                     // 推荐入睡时间卡片
                     recommendedTimesCard
                     
-                    Spacer(minLength: 30)
+                    Spacer(minLength: 20)
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 20)
+                .padding(.top, 10)
             }
         }
         .onReceive(timer) { _ in
@@ -65,9 +65,9 @@ struct ContentView: View {
     
     // MARK: - 标题区域
     private var headerSection: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 6) {
             Image(systemName: "moon.stars.fill")
-                .font(.system(size: 50))
+                .font(.system(size: 40))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [.yellow, .orange],
@@ -77,48 +77,45 @@ struct ContentView: View {
                 )
                 .shadow(color: .yellow.opacity(0.5), radius: 10)
             
-            Text("睡眠周期计算器")
-                .font(.system(size: 32, weight: .bold, design: .rounded))
+            Text("猪猪的催睡小助手")
+                .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundColor(.white)
             
-            Text("基于 R90 睡眠周期理论")
+            Text("哄你乖乖睡觉的秘密武器 💤")
                 .font(.subheadline)
                 .foregroundColor(.white.opacity(0.7))
         }
-        .padding(.vertical, 20)
+        .padding(.vertical, 12)
     }
     
     // MARK: - 起床时间选择卡片
     private var wakeUpTimeCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Image(systemName: "alarm.fill")
-                    .font(.title2)
-                    .foregroundColor(.orange)
-                
-                Text("明天起床时间")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                
-                Spacer()
-            }
+        HStack {
+            Image(systemName: "alarm.fill")
+                .font(.title2)
+                .foregroundColor(.orange)
+            
+            Text("明天几点要爬起来呀？")
+                .font(.subheadline)
+                .foregroundColor(.white)
+            
+            Spacer()
             
             DatePicker(
                 "",
                 selection: $wakeUpTime,
                 displayedComponents: .hourAndMinute
             )
-            .datePickerStyle(.wheel)
             .labelsHidden()
             .colorScheme(.dark)
-            .frame(maxWidth: .infinity)
+            .accentColor(.orange)
         }
-        .padding(20)
+        .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: 16)
                 .fill(Color.white.opacity(0.1))
                 .background(
-                    RoundedRectangle(cornerRadius: 20)
+                    RoundedRectangle(cornerRadius: 16)
                         .stroke(Color.white.opacity(0.2), lineWidth: 1)
                 )
         )
@@ -128,48 +125,52 @@ struct ContentView: View {
     private var sleepDurationCard: some View {
         let duration = calculateSleepDuration()
         
-        return VStack(spacing: 12) {
+        return VStack(spacing: 10) {
             HStack {
                 Image(systemName: "bed.double.fill")
-                    .font(.title2)
+                    .font(.title3)
                     .foregroundColor(.cyan)
                 
-                Text("如果现在睡觉")
-                    .font(.headline)
+                Text("现在去睡的话...")
+                    .font(.subheadline)
                     .foregroundColor(.white)
                 
                 Spacer()
             }
             
             HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text("能睡")
+                    .font(.body)
+                    .foregroundColor(.white.opacity(0.7))
+                
                 Text("\(duration.hours)")
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
+                    .font(.system(size: 40, weight: .bold, design: .rounded))
                     .foregroundColor(.cyan)
                 
                 Text("小时")
-                    .font(.title3)
+                    .font(.callout)
                     .foregroundColor(.white.opacity(0.8))
                 
                 Text("\(duration.minutes)")
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
+                    .font(.system(size: 40, weight: .bold, design: .rounded))
                     .foregroundColor(.cyan)
                 
                 Text("分钟")
-                    .font(.title3)
+                    .font(.callout)
                     .foregroundColor(.white.opacity(0.8))
             }
             
-            Text("到起床时间的睡眠时长")
+            Text(getSleepComment(hours: duration.hours))
                 .font(.caption)
                 .foregroundColor(.white.opacity(0.6))
         }
-        .padding(20)
+        .padding(16)
         .frame(maxWidth: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: 16)
                 .fill(Color.white.opacity(0.1))
                 .background(
-                    RoundedRectangle(cornerRadius: 20)
+                    RoundedRectangle(cornerRadius: 16)
                         .stroke(Color.white.opacity(0.2), lineWidth: 1)
                 )
         )
@@ -179,24 +180,24 @@ struct ContentView: View {
     private var recommendedTimesCard: some View {
         let recommendedTimes = calculateRecommendedSleepTimes()
         
-        return VStack(alignment: .leading, spacing: 16) {
+        return VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: "sparkles")
-                    .font(.title2)
+                    .font(.title3)
                     .foregroundColor(.purple)
                 
-                Text("最佳入睡时间")
-                    .font(.headline)
+                Text("猪猪建议你这个时间睡觉")
+                    .font(.subheadline.bold())
                     .foregroundColor(.white)
                 
                 Spacer()
             }
             
-            Text("每90分钟一个睡眠周期 + 15分钟入睡准备")
-                .font(.caption)
-                .foregroundColor(.white.opacity(0.6))
+            Text("（每90分钟一个睡眠周期 + 15分钟入睡）")
+                .font(.caption2)
+                .foregroundColor(.white.opacity(0.5))
             
-            VStack(spacing: 12) {
+            VStack(spacing: 10) {
                 ForEach(recommendedTimes, id: \.time) { recommendation in
                     RecommendedTimeButton(
                         time: recommendation.time,
@@ -205,13 +206,19 @@ struct ContentView: View {
                     )
                 }
             }
+            
+            Text("乖，听猪猪的话早点睡哦~ 🐷💕")
+                .font(.caption)
+                .foregroundColor(.pink.opacity(0.8))
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.top, 4)
         }
-        .padding(20)
+        .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: 16)
                 .fill(Color.white.opacity(0.1))
                 .background(
-                    RoundedRectangle(cornerRadius: 20)
+                    RoundedRectangle(cornerRadius: 16)
                         .stroke(Color.white.opacity(0.2), lineWidth: 1)
                 )
         )
@@ -261,6 +268,24 @@ struct ContentView: View {
         
         return recommendations
     }
+    
+    /// 根据睡眠时长返回有趣的评语
+    private func getSleepComment(hours: Int) -> String {
+        switch hours {
+        case 0..<4:
+            return "啊这...猪猪会心疼的！快去睡！😭"
+        case 4..<6:
+            return "有点少哦，但猪猪相信你能撑住！💪"
+        case 6..<7:
+            return "勉强够用，明天别打瞌睡哦～"
+        case 7..<8:
+            return "不错不错，是健康的小宝贝！✨"
+        case 8..<9:
+            return "完美！猪猪给你比个心 💕"
+        default:
+            return "哇塞睡这么多，养猪呢？😂"
+        }
+    }
 }
 
 // MARK: - 推荐时间按钮组件
@@ -280,36 +305,44 @@ struct RecommendedTimeButton: View {
         return String(format: "%.1f", hours)
     }
     
+    private var cycleEmoji: String {
+        switch cycles {
+        case 6: return "😴"
+        case 5: return "😊"
+        case 4: return "😅"
+        default: return "💤"
+        }
+    }
+    
     var body: some View {
         HStack {
             // 左侧：周期信息
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 6) {
-                    Image(systemName: "powersleep")
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 4) {
+                    Text(cycleEmoji)
                         .font(.caption)
-                        .foregroundColor(isOptimal ? .green : .white.opacity(0.7))
                     
                     Text("\(cycles) 个周期")
-                        .font(.subheadline)
+                        .font(.caption)
                         .foregroundColor(.white.opacity(0.8))
                 }
                 
                 Text("约 \(sleepHours) 小时")
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundColor(.white.opacity(0.5))
             }
             
             Spacer()
             
             // 右侧：时间显示
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 if isOptimal {
-                    Text("推荐")
-                        .font(.caption)
+                    Text(cycles == 6 ? "超棒" : "刚好")
+                        .font(.caption2)
                         .fontWeight(.medium)
                         .foregroundColor(.green)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
                         .background(
                             Capsule()
                                 .fill(Color.green.opacity(0.2))
@@ -317,20 +350,20 @@ struct RecommendedTimeButton: View {
                 }
                 
                 Text(timeString)
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
                     .foregroundColor(isOptimal ? .green : .white)
             }
         }
-        .padding(16)
+        .padding(12)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 12)
                 .fill(
                     isOptimal
                     ? Color.green.opacity(0.15)
                     : Color.white.opacity(0.05)
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: 12)
                         .stroke(
                             isOptimal
                             ? Color.green.opacity(0.3)
