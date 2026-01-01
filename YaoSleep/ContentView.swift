@@ -9,12 +9,25 @@ import SwiftUI
 internal import Combine
 
 struct ContentView: View {
-    // 起床时间，默认明天早上7点
-    @State private var wakeUpTime: Date = {
-        let calendar = Calendar.current
-        let tomorrow = calendar.date(byAdding: .day, value: 1, to: Date())!
-        return calendar.date(bySettingHour: 7, minute: 0, second: 0, of: tomorrow)!
-    }()
+    // 保存起床时间的小时和分钟到本地（使用 @AppStorage）
+    @AppStorage("wakeUpHour") private var wakeUpHour: Int = 7
+    @AppStorage("wakeUpMinute") private var wakeUpMinute: Int = 0
+    
+    // 用于 DatePicker 绑定的计算属性
+    private var wakeUpTime: Binding<Date> {
+        Binding(
+            get: {
+                let calendar = Calendar.current
+                let tomorrow = calendar.date(byAdding: .day, value: 1, to: Date())!
+                return calendar.date(bySettingHour: wakeUpHour, minute: wakeUpMinute, second: 0, of: tomorrow)!
+            },
+            set: { newValue in
+                let calendar = Calendar.current
+                wakeUpHour = calendar.component(.hour, from: newValue)
+                wakeUpMinute = calendar.component(.minute, from: newValue)
+            }
+        )
+    }
     
     // 用于刷新"现在时间"的计时器
     @State private var currentTime = Date()
@@ -103,7 +116,7 @@ struct ContentView: View {
             
             DatePicker(
                 "",
-                selection: $wakeUpTime,
+                selection: wakeUpTime,
                 displayedComponents: .hourAndMinute
             )
             .labelsHidden()
@@ -226,14 +239,30 @@ struct ContentView: View {
     
     // MARK: - 计算方法
     
+    /// 获取调整后的起床时间
+    private func getAdjustedWakeUpTime() -> Date {
+        let calendar = Calendar.current
+        let now = Date()
+        
+        // 创建今天的起床时间
+        var components = calendar.dateComponents([.year, .month, .day], from: now)
+        components.hour = wakeUpHour
+        components.minute = wakeUpMinute
+        components.second = 0
+        
+        var wakeUp = calendar.date(from: components)!
+        
+        // 如果时间已经过了，设为明天
+        if wakeUp <= now {
+            wakeUp = calendar.date(byAdding: .day, value: 1, to: wakeUp)!
+        }
+        
+        return wakeUp
+    }
+    
     /// 计算从现在到起床时间的睡眠时长
     private func calculateSleepDuration() -> (hours: Int, minutes: Int) {
-        var adjustedWakeUpTime = wakeUpTime
-        
-        // 如果选择的时间已经过了，认为是明天的这个时间
-        if adjustedWakeUpTime <= currentTime {
-            adjustedWakeUpTime = Calendar.current.date(byAdding: .day, value: 1, to: adjustedWakeUpTime)!
-        }
+        let adjustedWakeUpTime = getAdjustedWakeUpTime()
         
         let interval = adjustedWakeUpTime.timeIntervalSince(currentTime)
         let totalMinutes = Int(interval / 60)
@@ -245,12 +274,7 @@ struct ContentView: View {
     
     /// 根据R90理论计算推荐的入睡时间
     private func calculateRecommendedSleepTimes() -> [(time: Date, cycles: Int)] {
-        var adjustedWakeUpTime = wakeUpTime
-        
-        // 如果选择的时间已经过了，认为是明天的这个时间
-        if adjustedWakeUpTime <= currentTime {
-            adjustedWakeUpTime = Calendar.current.date(byAdding: .day, value: 1, to: adjustedWakeUpTime)!
-        }
+        let adjustedWakeUpTime = getAdjustedWakeUpTime()
         
         var recommendations: [(time: Date, cycles: Int)] = []
         
